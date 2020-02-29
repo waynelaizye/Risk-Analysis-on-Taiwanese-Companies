@@ -1,3 +1,11 @@
+# This file is used to retrieve posts from twitter.
+#
+# Usage: 
+# python tweet_crawler.py computer_peripherals.csv ./global_industry/
+#
+#
+
+
 import os
 import csv
 import sys
@@ -35,12 +43,12 @@ def search(search_words="null", chosen_lang="en"):
     tweets = tw.Cursor(api.search,
               q=search_words,
               lang=chosen_lang,
-              since=date_since).items(100)
+              since=date_since).items(50)
     
     for tweet in tweets:
         #print(tweet.text)
         message.append(tweet.text)
-    print(message)
+    #print(message)
 
     return message
 
@@ -71,11 +79,13 @@ def parse_csv(file_name = "None", dest_path = "./"):
                     data[row[2]] = msg2
                     save_data(data, row[1], dest_path, "en")
 
-
     return True
 
 
 def save_data(data, file_name, path, lang="eng"):
+    file_name = file_name.replace(" ", "_")
+    file_name = file_name.replace("/", "")
+    print('file name = {0}'.format(file_name))
     dataset = path + "train_" + file_name + lang + ".data"
 
     with open(dataset, 'wb') as filehandle:
@@ -86,6 +96,7 @@ if __name__== "__main__":
     api = init()
     #post(api)
     #search()
+
     data = parse_csv(sys.argv[1], sys.argv[2])
 
 
