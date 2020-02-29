@@ -22,6 +22,7 @@ ACCESS_TOKEN_SECRET = 'Ol3RvqVkNk5qA1hNftpZ7WuMMnaEyhVjxWVkfXOskKegi'    # your 
 CONSUMER_KEY = 'KIPwjwW1UeY6TRHQ4a85yHL18'     # your API key
 CONSUMER_SECRET = 'YUZFZhOwqp30XQ2MVzuQoZmvw50HK90IlRuEMaP0saxNGZDmfZ'  # your API secret key
 
+skip_list = ['電腦及周邊設備', '上游', '下游', '筆記型電腦', '精簡型電腦', '伺服器', '安全監控系統', '其他電腦及週邊設備']
 
 def init():
     auth = tw.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -40,12 +41,13 @@ def search(search_words="null", chosen_lang="en"):
     
     print('search word: {0}'.format(search_words))
     message = []
-    if search_words == "null" or search_words == "":
+    if search_words == "null" or search_words == "" or search_words in skip_list:
         return None 
 
     # Collect tweets
     tweets = tw.Cursor(api.search,
               q=search_words,
+              timeout=30,
               lang=chosen_lang,
               since=date_since).items(50)
     
@@ -61,7 +63,7 @@ def parse_csv(file_name = "None", dest_path = "./"):
     with open(file_name) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
-            print(row)
+            #print(row)
             if len(row) == 0:
                 break
             if len(row) > 1:
@@ -71,6 +73,7 @@ def parse_csv(file_name = "None", dest_path = "./"):
                     data[row[0]] = msg0
                     save_data(data, row[0], dest_path, "zh-tw")
                 
+                #print('file_name is: {0}'.format(sys.argv[1])) 
                 if sys.argv[1] != "Relationship.csv":
                     data = {}
                     msg1 = search(row[1], "en")
