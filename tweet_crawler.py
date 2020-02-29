@@ -1,6 +1,9 @@
 # This file is used to retrieve posts from twitter.
 #
-# Usage: 
+# Usage:
+# python tweet_crawler.py ${CSV_FILE} ${DEST_FOLDER}
+#
+# Example:
 # python tweet_crawler.py computer_peripherals.csv ./global_industry/
 #
 #
@@ -9,6 +12,7 @@
 import os
 import csv
 import sys
+import json
 import tweepy as tw
 import pandas as pd
 import pickle
@@ -67,17 +71,18 @@ def parse_csv(file_name = "None", dest_path = "./"):
                     data[row[0]] = msg0
                     save_data(data, row[0], dest_path, "zh-tw")
                 
-                data = {}
-                msg1 = search(row[1], "en")
-                if msg1 != None:
-                    data[row[1]] = msg1
-                    save_data(data, row[1], dest_path, "en")
-       
-                data = {}
-                msg2 = search(row[2], "en")
-                if msg2 != None:
-                    data[row[2]] = msg2
-                    save_data(data, row[1], dest_path, "en")
+                if sys.argv[1] != "Relationship.csv":
+                    data = {}
+                    msg1 = search(row[1], "en")
+                    if msg1 != None:
+                        data[row[1]] = msg1
+                        save_data(data, row[1], dest_path, "en")
+           
+                    data = {}
+                    msg2 = search(row[2], "en")
+                    if msg2 != None:
+                        data[row[2]] = msg2
+                        save_data(data, row[1], dest_path, "en")
 
     return True
 
@@ -86,10 +91,15 @@ def save_data(data, file_name, path, lang="eng"):
     file_name = file_name.replace(" ", "_")
     file_name = file_name.replace("/", "")
     print('file name = {0}'.format(file_name))
-    dataset = path + "train_" + file_name + lang + ".data"
+    dataset = path + "tweet_" + file_name + lang + ".json"
 
-    with open(dataset, 'wb') as filehandle:
-        pickle.dump(data, filehandle)
+    #with open(dataset, 'wb') as filehandle:
+    #    pickle.dump(data, filehandle)
+    
+    # save to json....
+    with open(dataset, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
 
 
 if __name__== "__main__":
