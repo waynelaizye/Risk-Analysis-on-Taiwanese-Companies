@@ -8,63 +8,108 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from urllib.parse import urlparse
+import itertools  
 import json
 import os
 import csv
 import sys
+import math
 
-def parse_csv(file_name = "None", dest_path = "./"):
+def parse_csv(file1 = "None", file2 = "None"):
     fin_data = {}
-
-    with open(file_name) as csvfile:
-        readCSV = csv.reader(csvfile, delimiter=',')
-        index = 0
-        for row in readCSV:
-            #print(row)
-            if len(row) == 0:
-                break
-            if len(row) > 1:
-                if index == 0:
-                    index = index +1
-                    continue
-                ratios = []
-                #print('the whole row: {0}'.format(row))
-                print('asset value: {0}'.format(float(row[6])))
-                ratios.append(float(row[7]))
-                
-                tmp = float(row[9])*1.0/float(row[11])
-                print(tmp)
-                print('long-term debts/ total invested capital: {0}'.format(tmp))
-                ratios.append(tmp)
-                
-                if row[10] != "--" and row[20] != "--" and float(row[20]) != 0:
-                    print('debt/equity: {0}'.format(float(row[10])*1.0/float(row[20])))
-                    ratios.append(float(row[10])*1.0/float(row[20]))
-                else:
-                    ratios.append("NULL")
-                fin_data[row[4]] = ratios
     
-    print('final result: {0}'.format(fin_data))
+    csvfile1 = open(file1)
+    csvfile2 = open(file2)
+    balance_sheet_csv = csv.reader(csvfile1, delimiter=',')
+    income_statement_csv = csv.reader(csvfile2, delimiter=',')
     
-    return True
+    index = 0
+    #print("files: {0} {1}".format(balance_sheet_csv, income_statement_csv))
+    for row1, row2 in itertools.zip_longest(balance_sheet_csv, income_statement_csv):
+        ratios = {}
+        #print('row1: {0}, row2: {1}'.format(row1, row2))
+        if index == 0:
+            index = index +1
+            continue
+            
+        # logz1: log asset accounting value
+        logz1 = math.log(float(row1[7]))     
+        #print('asset value: {0}'.format(logz1))
+        ratios['logz1'] = logz1
+        
+        # logz4: log book to market value
+        logz4 = math.log(float(row1[20])*1.0/float(row1[11]))
+        ratios['logz4'] = logz4
+
+        # z5
+        z5 = float(row1[9])*1.0/float(row1[11])
+        #print('long-term debts/ total invested capital: {0}'.format(z5))
+        ratios['z5'] = z5
+        
+        #if row1[10] != "--" and row1[20] != "--" and float(row1[20]) != 0:
+        # z7
+        z7 = float(row1[10])*1.0/float(row1[20])
+        #print('debt/equity: {0}'.format(z7))
+        ratios['z7'] = z7
+        
+        #else:
+        #    ratios['z7'] = "NULL"
+
+        # z22: quick ratio
+        z22 = float(row1[5])*1.0/float(row1[8])
+        ratios['z22'] = z22
+        
+        #print('[1] ratios = {0}'.format(ratios))
+
+        if row2[5] != "--":
+            # z11: operating profit margin  
+            z11 = float(row2[9])*1.0/float(row2[5])
+            ratios['z11'] = z11
+            
+            # z13
+            z13 = float(row2[17])*1.0/float(row2[5])
+            ratios['z13'] = z13
+            
+            # z15: gross profit margin
+            z15 = (float(row2[5]) - float(row2[6]))*1.0/float(row2[5])
+            ratios['z15'] = z15
+        else:
+            ratios['z11'] = "NULL"
+            ratios['z13'] = "NULL"
+
+               # z17: EPS
+        z17 = float(row2[32])
+        ratios['z17'] = z17
+        
+        #print('[2] ratios = {0}'.format(ratios))
+        
+        # Save all ratios to together
+        fin_data[row1[4]] = ratios
 
 
-def save_data(articles, file_name, path):
-    file_name = file_name.replace(" ", "_")
-    file_name = file_name.replace("/", "")
-    print('file name = {0}'.format(file_name))
-    dataset = path + "news_" + file_name + ".json"
+    #print('final result: {0}'.format(fin_data))
+    return fin_data
+
+
+def save_data(data, postfix = "2019_Q", dest = "./"):
+    dataset = dest + "/ratios" + postfix + ".json"
 
     # save to json....
     with open(dataset, 'w', encoding='utf-8') as f:
-        json.dump(articles, f, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 if __name__== "__main__":
     print("Retrieving numbers from financial statements")
-    print('file = {0}, path = {1}'.format(sys.argv[1], sys.argv[2]))
+    print('balance sheet = {0}, income statement = {1}'.format(sys.argv[1], sys.argv[2]))
     data = parse_csv(sys.argv[1], sys.argv[2])
-
+    
+    tmp = sys.argv[1].replace(".", "_")
+    postfix = tmp.split("_")[-3]
+    postfix += tmp.split("_")[-2]
+    print('postfix = {0}'.format(postfix))
+    
+    save_data(data, postfix, sys.argv[3])
 
 
 
