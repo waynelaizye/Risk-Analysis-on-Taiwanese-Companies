@@ -15,7 +15,8 @@ import csv
 import sys
 import math
 
-def parse_csv(file1 = "None", file2 = "None"):
+
+def parse_csv(file1 = "None", file2 = "None", companies = []):
     fin_data = {}
     
     csvfile1 = open(file1)
@@ -30,9 +31,13 @@ def parse_csv(file1 = "None", file2 = "None"):
         if index == 0:
             index = index +1
             continue
-        
+
         if row1 == None:
             break
+
+        if row1[4] not in companies:
+            print('not on list: {0}'.format(row1[4]))
+            continue
 
         # logz1: log asset accounting value
         logz1 = math.log(float(row1[7]))     
@@ -95,9 +100,17 @@ def save_data(data, postfix = "2019_Q", dest = "./"):
 
 
 if __name__== "__main__":
+    # Get company list
+    companies = []
+    f = open("./company.txt", "r")
+    for line in f:
+        companies.append(line[:-1])
+
+    print(companies)
+
     print("Retrieving numbers from financial statements")
     print('balance sheet = {0}, income statement = {1}'.format(sys.argv[1], sys.argv[2]))
-    data = parse_csv(sys.argv[1], sys.argv[2])
+    data = parse_csv(sys.argv[1], sys.argv[2], companies)
     
     tmp = sys.argv[1].replace(".", "_")
     postfix = tmp.split("_")[-3]
