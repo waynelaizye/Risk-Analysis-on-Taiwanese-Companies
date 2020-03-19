@@ -24,17 +24,18 @@ def parse_csv(file1 = "None", file2 = "None"):
     income_statement_csv = csv.reader(csvfile2, delimiter=',')
     
     index = 0
-    #print("files: {0} {1}".format(balance_sheet_csv, income_statement_csv))
     for row1, row2 in itertools.zip_longest(balance_sheet_csv, income_statement_csv):
         ratios = {}
         #print('row1: {0}, row2: {1}'.format(row1, row2))
         if index == 0:
             index = index +1
             continue
-            
+        
+        if row1 == None:
+            break
+
         # logz1: log asset accounting value
         logz1 = math.log(float(row1[7]))     
-        #print('asset value: {0}'.format(logz1))
         ratios['logz1'] = logz1
         
         # logz4: log book to market value
@@ -43,25 +44,19 @@ def parse_csv(file1 = "None", file2 = "None"):
 
         # z5
         z5 = float(row1[9])*1.0/float(row1[11])
-        #print('long-term debts/ total invested capital: {0}'.format(z5))
         ratios['z5'] = z5
         
-        #if row1[10] != "--" and row1[20] != "--" and float(row1[20]) != 0:
         # z7
         z7 = float(row1[10])*1.0/float(row1[20])
-        #print('debt/equity: {0}'.format(z7))
         ratios['z7'] = z7
-        
-        #else:
-        #    ratios['z7'] = "NULL"
 
         # z22: quick ratio
         z22 = float(row1[5])*1.0/float(row1[8])
         ratios['z22'] = z22
         
-        #print('[1] ratios = {0}'.format(ratios))
+        #print('[1]{0} ratios = {1}'.format(row1[4], ratios))
 
-        if row2[5] != "--":
+        if row2[5] != "--" and float(row2[5]) != 0:
             # z11: operating profit margin  
             z11 = float(row2[9])*1.0/float(row2[5])
             ratios['z11'] = z11
