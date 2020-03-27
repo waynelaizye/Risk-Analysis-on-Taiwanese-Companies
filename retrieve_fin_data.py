@@ -1,7 +1,10 @@
 #
 # This file is used to retrieve financial data from balance sheets.
 # Usage:
+# python ./retrieve_fin_data.py ../fin_statements/balance_sheet_{Duration}.csv ../fin_statements/income_statement_{Duration}.csv <DEST_DIR>
 #
+# Example:
+# python ./retrieve_fin_data.py ../fin_statements/balance_sheet_2019_Q4.csv ../fin_statements/income_statement_2019_Q4.csv ../fin_data/
 #
 
 import requests
@@ -36,7 +39,7 @@ def parse_csv(file1 = "None", file2 = "None", companies = []):
             break
 
         if row1[4] not in companies:
-            print('not on list: {0}'.format(row1[4]))
+            #print('not on list: {0}'.format(row1[4]))
             continue
 
         # logz1: log asset accounting value
@@ -48,6 +51,9 @@ def parse_csv(file1 = "None", file2 = "None", companies = []):
         ratios['logz4'] = logz4
 
         # z5
+        #print('Name: {0}, row1[9]: {1}, row1[11]: {2}'.format(row1[4], row1[9], row1[11]))
+        if row1[9] == "--":
+            row1[9] = 0
         z5 = float(row1[9])*1.0/float(row1[11])
         ratios['z5'] = z5
         
@@ -77,7 +83,7 @@ def parse_csv(file1 = "None", file2 = "None", companies = []):
             ratios['z11'] = "NULL"
             ratios['z13'] = "NULL"
 
-               # z17: EPS
+        # z17: EPS
         z17 = float(row2[32])
         ratios['z17'] = z17
         
@@ -106,7 +112,7 @@ if __name__== "__main__":
     for line in f:
         companies.append(line[:-1])
 
-    print(companies)
+    #print(companies)
 
     print("Retrieving numbers from financial statements")
     print('balance sheet = {0}, income statement = {1}'.format(sys.argv[1], sys.argv[2]))
@@ -115,7 +121,7 @@ if __name__== "__main__":
     tmp = sys.argv[1].replace(".", "_")
     postfix = tmp.split("_")[-3]
     postfix += tmp.split("_")[-2]
-    print('postfix = {0}'.format(postfix))
+    #print('postfix = {0}'.format(postfix))
     
     save_data(data, postfix, sys.argv[3])
 
