@@ -25,10 +25,10 @@ search_period = {
         "Q1": "min%3A1%2F1%2F2019%2Ccd_max%3A3%2F31%2F2019&tbm=nws",
         "Q2": "min%3A4%2F1%2F2019%2Ccd_max%3A6%2F30%2F2019&tbm=nws",
         "Q3": "min%3A7%2F1%2F2019%2Ccd_max%3A9%2F30%2F2019&tbm=nws",
-        "Q4": "min%3A10%2F1%2F2019%2Ccd_max%3A9%2F31%2F2019&tbm=nws"
+        "Q4": "min%3A10%2F1%2F2018%2Ccd_max%3A9%2F31%2F2018&tbm=nws"
 }
 
-def search(key_word="null", period=None):
+def search(key_word="null", period=""):
     articles = {}
 
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -37,10 +37,11 @@ def search(key_word="null", period=None):
         return None
     
     keyword = quote(key_word.encode('utf8'))
+    print('duration = {0}'.format(search_period[period]))
    
     # Sample request in Google search 
     # https://www.google.com/search?q=%E5%8F%B0%E7%A9%8D%E9%9B%BB&client=safari&rls=en&biw=1780&bih=946&source=lnt&tbs=cdr%3A1%2Ccd_min%3A7%2F1%2F2019%2Ccd_max%3A9%2F30%2F2019&tbm=nws
-    res = requests.get("https://www.google.com/search?q=" + keyword + "&client=safari&rls=en&biw=1780&bih=946&source=lnt&tbs=cdr%3A1%2Ccd_" + period, verify=False)
+    res = requests.get("https://www.google.com/search?q=" + keyword + "&client=safari&rls=en&biw=1780&bih=946&source=lnt&tbs=cdr%3A1%2Ccd_" + search_period[period], verify=False)
     
     if res.status_code != 200:
         return articles
@@ -129,7 +130,7 @@ def search(key_word="null", period=None):
     return articles
 
 
-def parse_csv(file_name = "None", dest_path = "./", period=None):
+def parse_csv(file_name = "None", dest_path = "./", period=""):
     with open(file_name) as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
@@ -139,25 +140,25 @@ def parse_csv(file_name = "None", dest_path = "./", period=None):
             if len(row) > 1:
                 msg0 = search(row[0], period)
                 if msg0 != None:
-                    save_data(msg0, row[0], dest_path)
+                    save_data(msg0, row[0], dest_path, period)
                 
                 if sys.argv[1] != "Relationship.csv":
                     msg1 = search(row[1], period)
                     if msg1 != None:
-                        save_data(msg1, row[1], dest_path)
+                        save_data(msg1, row[1], dest_path, period)
            
                     msg2 = search(row[2], period)
                     if msg2 != None:
-                        save_data(msg2, row[2], dest_path)
+                        save_data(msg2, row[2], dest_path, period)
 
     return True
 
 
-def save_data(articles, file_name, path):
+def save_data(articles, file_name, path, period=""):
     file_name = file_name.replace(" ", "_")
     file_name = file_name.replace("/", "")
     print('file name = {0}'.format(file_name))
-    dataset = path + "news_" + file_name + ".json"
+    dataset = path + "news_" + file_name + "_" + period + ".json"
 
     # save to json....
     with open(dataset, 'w', encoding='utf-8') as f:
@@ -170,6 +171,7 @@ if __name__== "__main__":
     
     #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     for QQQ in search_period:
+        print('period = {0}'.format(QQQ))
         data = parse_csv(sys.argv[1], sys.argv[2], QQQ)
 
 
