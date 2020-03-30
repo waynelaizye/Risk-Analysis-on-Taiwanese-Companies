@@ -14,6 +14,7 @@ import csv
 import sys
 import re
 import urllib3
+import certifi
 
 # In some website, the article is not in <p>, so will be empty. Check articles 
 # dictionary to delete empty news
@@ -33,12 +34,10 @@ def search(key_word="null", period=None):
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     if key_word == "null" or key_word in skip_list:
         #print("The key word is empty or in the skip list")
-        return articles
+        return None
     
     keyword = quote(key_word.encode('utf8'))
    
-    #print('keyword: {0}'.format(keyword))
-    #res = requests.get("https://news.google.com/search?q=" + keyword + "when%3A4d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant") #when%3A幾d 爬幾天之內新聞
     # Sample request in Google search 
     # https://www.google.com/search?q=%E5%8F%B0%E7%A9%8D%E9%9B%BB&client=safari&rls=en&biw=1780&bih=946&source=lnt&tbs=cdr%3A1%2Ccd_min%3A7%2F1%2F2019%2Ccd_max%3A9%2F30%2F2019&tbm=nws
     res = requests.get("https://www.google.com/search?q=" + keyword + "&client=safari&rls=en&biw=1780&bih=946&source=lnt&tbs=cdr%3A1%2Ccd_" + period, verify=False)
@@ -46,20 +45,18 @@ def search(key_word="null", period=None):
     if res.status_code != 200:
         return articles
 
-    #soup = BeautifulSoup(res.content, "html.parser")
-    #headline = soup.findAll("a", {"class": "DY5T1d"})
-    
     headline = []
     soup = BeautifulSoup(res.text, 'lxml')
     a = soup.find_all('a') 
     for i in a:
         k = i.get('href')
+        #print(k)
         try:
             m = re.search("(?P<url>https?://[^\s]+)", k)
             n = m.group(0)
             rul = n.split('&')[0]
             domain = urlparse(rul)
-            if(re.search('google.com', domain.netloc)):
+            if(re.search('google.com', domain.netloc)) or (re.search('zh.wikipedia.org', domain.netloc)):
                 continue
             else:
                 headline.append(rul)
@@ -70,8 +67,34 @@ def search(key_word="null", period=None):
 
     # Only iterate 100 posts
     for h in headline[0:100]:
-        #print(h) 
+        try:
+
+            resp = requests.get(h,  allow_redirects=False)
+            soup = BeautifulSoup(resp.content, 'html.parser')
+            test = soup.findAll(text = re.compile(key_word))
+            
+            if len(test) == 0:
+                print('Keyword {0} not found in webpage {1}'.format(key_word, h))
+                continue
+        except requests.ConnectionError as e:
+            print("OOPS!! Connection Error. Make sure you are connected to Internet. Technical Details given below.\n")
+            print(str(e))
+            #renewIPadress()
+            continue
+        except requests.Timeout as e:
+            print("OOPS!! Timeout Error")
+            print(str(e))
+            #renewIPadress()
+            continue
+        except requests.RequestException as e:
+            print("OOPS!! General Error")
+            print(str(e))
+            #renewIPadress()
+            continue
+        except KeyboardInterrupt:
+            print("Someone closed the program")
         
+        """
         try:
             res1 = requests.get(h)
         except requests.ConnectionError as e:
@@ -91,15 +114,17 @@ def search(key_word="null", period=None):
             continue
         except KeyboardInterrupt:
             print("Someone closed the program")
-            
+        """
+
         # Concatenate all news together
-        soup1 = BeautifulSoup(res1.content, "html.parser")
+        soup1 = BeautifulSoup(resp.content, "html.parser")
         lines = soup1.findAll('p')
         cont = ''
         for l in lines:
             cont += l.text
         articles[h] = cont
-        #print(cont)
+        print(cont)
+
 
     return articles
 
