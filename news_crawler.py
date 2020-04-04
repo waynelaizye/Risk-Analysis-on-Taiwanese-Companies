@@ -1,6 +1,10 @@
 #
 # This file is used to retrieve posts from Google news.
 # Usage:
+# python news_crawler.py ${CSV_FILE} ${DEST_FOLDER}
+#
+# Example:
+# python news_crawler.py computer_peripherals.csv ./global_industry/
 #
 #
 
