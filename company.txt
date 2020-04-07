@@ -36,7 +36,7 @@
 記憶
 三星電子
 SK海力士
-Smart Modular Technologies
+Smart_Modular_Technologies
 金寶
 鴻海
 精英
@@ -93,7 +93,7 @@ Smart Modular Technologies
 岳豐
 保銳
 帝聞
-Eaton Corporation Plc
+Eaton_Corporation_Plc
 艾默生電氣公司
 施耐德電機公司
 互億
@@ -108,7 +108,7 @@ Eaton Corporation Plc
 新普
 樂金化學
 松下電器
-Samsung SDI
+Samsung_SDI
 建準
 奇鋐
 泰碩
@@ -279,7 +279,7 @@ VisionTek
 詠昇
 安費諾
 莫仕
-TE Connectivity
+TE_Connectivity
 信錦
 新日興
 鑫禾

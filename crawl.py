@@ -15,28 +15,28 @@ import json
 
 articles = {}
 keyword = quote('台積電'.encode('utf8'))
-res = requests.get("https://news.google.com/search?q=" + keyword + "when%3A14d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant") #when%3A幾d 爬幾天之內新聞
+res = requests.get("https://news.google.com/search?q=" + keyword + "when%3A30d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant") #when%3A幾d 爬幾天之內新聞
 
 
 if res.status_code == 200:
     soup = BeautifulSoup(res.content, "html.parser")
     headline = soup.findAll("a", {"class": "DY5T1d"})
     
-    for h in headline:
-        res1 = requests.get('https://news.google.com' + h['href'][1:])
-        soup1 = BeautifulSoup(res1.content, "html.parser")
-        lines = soup1.findAll('p')
-        cont = ''
-        for l in lines:
-            cont += l.text
-        articles[h.text] = cont
+#    for h in headline:
+#        res1 = requests.get('https://news.google.com' + h['href'][1:])
+#        soup1 = BeautifulSoup(res1.content, "html.parser")
+#        lines = soup1.findAll('p')
+#        cont = ''
+#        for l in lines:
+#            cont += l.text
+#        articles[h.text] = cont
 
 # In some website, the article is not in <p>, so will be empty. Check articles 
 # dictionary to delete empty news
 
 # save to json....
-with open('news.json', 'w', encoding='utf-8') as f:
-    json.dump(articles, f, ensure_ascii=False, indent=4)
+#with open('news.json', 'w', encoding='utf-8') as f:
+#    json.dump(articles, f, ensure_ascii=False, indent=4)
 
 
 
