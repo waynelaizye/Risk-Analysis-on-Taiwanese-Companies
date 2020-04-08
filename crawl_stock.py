@@ -4,20 +4,42 @@ Created on Tue Apr  7 17:13:20 2020
 
 @author: Wayne
 """
-
 import requests
+import numpy as np
+import json
+import time
 
-def getStock(id):
-    p1 = '2018'
-    site = 'https://query1.finance.yahoo.com/v7/finance/download/'+str(id) + \
-    .TW?period1=0&period2=1549258857&interval=1d&events=history&crumb=hP2rOschxO0"
-    stock = Share(str(id)+'.TW')
-    today = datetime.date.today() #todays date
-    data = stock.get_historical('2016-01-28', str(today))
-    return data
-
-print(getStock(2353))
+dates = ['20181001', '20181101','20181201','20190101','20190201','20190301',\
+         '20190401','20190501','20190601','20190701','20190801','20190901',\
+         '20191001','20191101','20191201']
 
 
-site = "https://query1.finance.yahoo.com/v7/finance/download/2330.TW?period1=0&period2=1549258857&interval=1d&events=history&crumb=hP2rOschxO0"
-response = requests.post(site)
+with open('company_data.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+
+stocks = {}
+
+for d in data:
+    if "COMPANY_ID" in data[d]:
+        stock = []
+        for date in dates:
+            url = 'https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date='+\
+                    date + '&stockNo=' + data[d]["COMPANY_ID"]
+            r = requests.get(url)
+            time.sleep(5)
+            try:
+                stock += [[i[0],i[6]] for i in r.json()['data']]
+            except:
+                break
+    stocks[d] = stock
+
+
+with open('stock.json', 'w', encoding='utf-8') as f:
+    json.dump(stocks, f, ensure_ascii=False, indent=4)
+
+#stock = []
+#for date in dates:
+#    url = 'https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date='+\
+#            date+'&stockNo=' + '2388'
+#    r = requests.get(url)
+#    stock += [[i[0],i[6]] for i in r.json()['data']]

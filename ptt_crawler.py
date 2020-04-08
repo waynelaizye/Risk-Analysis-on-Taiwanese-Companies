@@ -17,7 +17,6 @@ import sys
 file_name = 'company.txt'
 save_path = 'ptt_company'
 
-skip_list = [' ', 'null']
 mon = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06',\
        'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
 
@@ -105,29 +104,3 @@ if __name__== "__main__":
             articles += crawl(word)
         save_data(articles, name, save_path)
 
-#url = 'https://www.ptt.cc/bbs/Gossiping/search?q=%E5%8F%B0%E7%A9%8D%E9%9B%BB'
-#res = requests.get(url, cookies={'over18': '1'})
-#
-#if res.status_code != 200:
-#    pass
-#soup = BeautifulSoup(res.content, "html.parser")
-#headline = soup.findAll("div", {"class": "r-ent"})
-#
-#articles = []
-#for h in headline:
-#    dic = {'title':h.find("div", {"class": "title"}).text[:-1].split(']')[1][1:],\
-#            'time':h.find("div", {"class": "date"}).text[1:]}
-#    url2 = 'https://www.ptt.cc' + h.a.get('href')
-#    res2 = requests.get(url2, cookies={'over18': '1'})
-#    soup2 = BeautifulSoup(res2.content, "html.parser")
-#    dic['content'] = ' '.join(soup2.find(id="main-content").text.split('--\n※')[0].split('\n')[1:])
-#    dic['comment'] = []
-#    comment = soup2.findAll("div", {"class": "push"})
-#    for c in comment:
-#        if c.find("span",{'class':"hl push-tag"}) == None:
-#            dic['comment'].append({'push':c.find("span",{'class':"f1 hl push-tag"}).text,\
-#                                   'text':c.find("span",{'class':"f3 push-content"}).text})
-#        else:
-#            dic['comment'].append({'push':c.find("span",{'class':"hl push-tag"}).text,\
-#                                   'text':c.find("span",{'class':"f3 push-content"}).text})
-#    articles.append(dic)
