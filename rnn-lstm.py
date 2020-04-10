@@ -6,9 +6,10 @@ import json
 import sys
 
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Embedding
 from keras.layers import LSTM
+#from keras.layers import Dense, Activation, Flatten
 
 COMPANIES="./company.txt"
 
@@ -50,12 +51,12 @@ def load_labels(companies, path, period):
         find_str = ccc + "_" + period
         if labels[find_str] == None or labels[find_str] == "NA":
             # If there is no label, use "3.0" temporarily.
-            output.append(3.0)
+            output.append(3.0/10.0)
         else:
-            output.append(labels[find_str])
+            output.append(labels[find_str]/10.0)
    
 
-    return output
+    return np.array(output)
 
 
 def train_data(x_train, y_train):
@@ -67,12 +68,13 @@ def train_data(x_train, y_train):
     # model.add(Embedding(max_features, output_dim=128))
    
     print('X (row, col) = ({0}, {1})'.format(len(x_train), len(x_train[0])))
-    print('Y (row, col) = {0}'.format(y_trian.shape))
+    print('Y (row, col) = {0}'.format(y_train.shape))
     # Add a LSTM layer with 128 internal units.
     model.add(LSTM(16, return_sequences=True, activation='relu'))
     model.add(Dropout(0.5))
+    
+    model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
-
     model.compile(loss='binary_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
@@ -115,6 +117,6 @@ if __name__== "__main__":
 
     keys, X_test = load_train_data(sys.argv[2], "./sentiment.json", "Q2")
     Y_test = load_labels(keys, "./label.json", "Q2")
-    #test_data(X_test, Y_test, model)
+    test_data(X_test, Y_test, model)
     #output_scores()
 
