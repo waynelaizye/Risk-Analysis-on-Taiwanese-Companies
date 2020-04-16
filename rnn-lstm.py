@@ -4,7 +4,9 @@ import numpy as np
 import keras
 import json
 import sys
+import os
 
+from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Embedding
@@ -12,70 +14,123 @@ from keras.layers import LSTM
 #from keras.layers import Dense, Activation, Flatten
 
 COMPANIES="./company.txt"
+SENTI_PATH="./sentiment.json"
+# Not include Q4 temporarily since the company data is insufficient
+duration = ["Q1", "Q2", "Q3"]
+
+class activation_wrapper(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        def _func(x):
+            return self.func(x, *args, **kwargs)
+        return _func
+
+wrapped_relu = activation_wrapper(keras.activations.relu)
 
 # Combine the FIN ratios and sentiment data together
-def load_train_data(fin_path, senti_path, period):
-    with open(fin_path) as f:
-        fin_data = json.load(f)
+# Read the whole year in one time
+def load_train_data(fin_dir, period=None):
+    files_path = [os.path.join(fin_dir, x) for x in os.listdir(fin_dir)]
+    #print(files_path)
+
+    title = "ratios2019"
+    if period == None:
+        period = duration
     
-    with open(senti_path) as f:
-        senti_data = json.load(f)
-  
-    final_data = []
-    for key, val in fin_data.items():
-        combined = np.array(list(val.values()))
-        find_str = key + "_" + period
-        duration = []
-        #print('keyword in sentiment: {0}, {1}'.format(key, find_str))
-       
-        if find_str in senti_data:
-            combined = np.concatenate((combined, np.array(senti_data[find_str])))
-        else:
-            combined = np.concatenate((np.array(val), np.array([0.0, 0.0])))
+    # Load JSON files
+    year_data = []
+    for QQ in period:
+        q_data = []
+        fff = title + QQ + ".json"
+        for filename in files_path:
+            if fff in filename:
+                #print(fff)
+                with open(filename) as f:
+                    q_data = json.load(f)
+                    year_data.append(q_data)
         
-        duration.append(combined)
-        #print('keyword= {0}, data= {1}'.format(key, combined))
-        final_data.append(np.array(duration))
-
-
-    #print(final_data)
-    return list(fin_data.keys()), np.array(final_data)
-
-def load_labels(companies, path, period):
-    with open(path) as f:
-        labels = json.load(f)
-   
-    # TODO: Normalize the output
-    output = []
+    with open(SENTI_PATH) as f:
+        senti_data = json.load(f)
+    
+    with open(COMPANIES) as f:
+        companies = [line.strip() for line in f]
+    #print(companies) 
+    
+    final_data = []
+    all_keys = []
     for ccc in companies:
-        find_str = ccc + "_" + period
-        if labels[find_str] == None or labels[find_str] == "NA":
-            # If there is no label, use "3.0" temporarily.
-            output.append(3.0/10.0)
-        else:
-            output.append(labels[find_str]/10.0)
-   
+        timestep = []
+        for i in range(0, len(period)):
+            #print('the period is {0}'.format(period[i]))
+            if ccc in year_data[i]:
+                find_str = ccc + "_" + period[i]
+                combined = np.array(list(year_data[i][ccc].values()))
+                if find_str in senti_data:
+                    combined = np.concatenate((combined, np.array(senti_data[find_str])))
+                
+                timestep.append(combined)
+        
+        #print('[{0}] company data = {1}'.format(period[i], timestep))
+        #np.info(np.array(timestep))
+        final_data.append(np.array(timestep))
 
-    return np.array(output)
+    padded = pad_sequences(final_data, padding='post')
+    #np.info(padded)
+    #print(padded)
+    return np.asarray(padded)
+
+
+def load_labels(label_path, period=None):
+    with open(COMPANIES) as f:
+        companies = [line.strip() for line in f]
+
+    with open(label_path) as f:
+        labels = json.load(f)
+    
+    if period == None:
+        period = duration
+    
+    final_data = []
+    # TODO: Normalize the output ??
+    for ccc in companies:
+        timestep = []
+        for i in range(0, len(period)):
+            #print('the period is {0}'.format(period[i]))
+            find_str = ccc + "_" + period[i]
+            if labels[find_str] == None or labels[find_str] == "NA":
+                # If there is no label, use "3.0" temporarily.
+                # print('No label found. {0}'.format(ccc))
+                timestep.append(3.0/1.0)
+            else:
+                timestep.append(labels[find_str]/1.0)
+        #print('[{0}] company data = {1}'.format(period[i], timestep))
+        final_data.append(np.array(timestep))
+       
+
+    return np.array(final_data)
 
 
 def train_data(x_train, y_train):
+    #x_train = sequence.pad_sequences(x_train)
     max_features = len(x_train) * len(x_train[0])
 
     model = Sequential()
     
     # Add an embedding layer
     # model.add(Embedding(max_features, output_dim=128))
-   
-    print('X (row, col) = ({0}, {1})'.format(len(x_train), len(x_train[0])))
+     
+    print('X (row, col) = {0}'.format(x_train.shape))
     print('Y (row, col) = {0}'.format(y_train.shape))
     # Add a LSTM layer with 128 internal units.
     model.add(LSTM(16, return_sequences=True, activation='relu'))
     model.add(Dropout(0.5))
     
     model.add(Flatten())
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy',
+    #model.add(Dense(1, activation=wrapped_relu(max_value=3.0, threshold=2.0)))
+    model.add(Dense(3, activation='linear'))
+    model.compile(loss='mse',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
 
@@ -86,6 +141,7 @@ def train_data(x_train, y_train):
 
 def test_data(x_test, y_test, model):
     score = model.evaluate(x_test, y_test, batch_size=16)
+    print(model.metrics_names)
     print('the final score is: {0}'.format(score))
 
 
@@ -108,15 +164,16 @@ def output_scores():
 
 
 if __name__== "__main__":
-    #load_train_data()
-    keys, X_train = load_train_data(sys.argv[1], "./sentiment.json", "Q1")
+    X_train = load_train_data(sys.argv[1])
+    #np.info(X_train)
 
-    Y_train = load_labels(keys, "./label.json", "Q1")
+    Y_train = load_labels("./label.json")
+    #np.info(Y_train)
 
     model = train_data(X_train, Y_train)
 
-    keys, X_test = load_train_data(sys.argv[2], "./sentiment.json", "Q2")
-    Y_test = load_labels(keys, "./label.json", "Q2")
-    test_data(X_test, Y_test, model)
+    #keys, X_test = load_train_data(sys.argv[1], list(["Q4"]))
+    #Y_test = load_labels(keys, "./label.json", list(["Q4"]))
+    #test_data(X_test, Y_test, model)
     #output_scores()
 
