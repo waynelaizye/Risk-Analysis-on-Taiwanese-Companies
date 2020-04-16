@@ -16,7 +16,7 @@ from keras.layers import LSTM
 COMPANIES="./company.txt"
 SENTI_PATH="./sentiment.json"
 # Not include Q4 temporarily since the company data is insufficient
-duration = ["Q1", "Q2", "Q3"]
+duration = ["Q1", "Q2"]
 
 class activation_wrapper(object):
     def __init__(self, func):
@@ -118,18 +118,16 @@ def train_data(x_train, y_train):
 
     model = Sequential()
     
-    # Add an embedding layer
-    # model.add(Embedding(max_features, output_dim=128))
-     
     print('X (row, col) = {0}'.format(x_train.shape))
     print('Y (row, col) = {0}'.format(y_train.shape))
+    
     # Add a LSTM layer with 128 internal units.
-    model.add(LSTM(16, return_sequences=True, activation='relu'))
+    model.add(LSTM(128, return_sequences=True, activation='relu'))
     model.add(Dropout(0.5))
     
     model.add(Flatten())
     #model.add(Dense(1, activation=wrapped_relu(max_value=3.0, threshold=2.0)))
-    model.add(Dense(3, activation='linear'))
+    model.add(Dense(2, activation='linear'))
     model.compile(loss='mse',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
@@ -140,28 +138,17 @@ def train_data(x_train, y_train):
     return model
 
 def test_data(x_test, y_test, model):
-    score = model.evaluate(x_test, y_test, batch_size=16)
+    print('X (row, col) = {0}'.format(x_test.shape))
+    print('Y (row, col) = {0}'.format(y_test.shape))
+    
+    score = model.evaluate(x_test, y_test, batch_size=len(y_test))
+    
     print(model.metrics_names)
     print('the final score is: {0}'.format(score))
 
 
     return score
     
-
-def output_scores():
-    model = tf.keras.Sequential()
-    model.add(layers.Embedding(input_dim=1000, output_dim=64))
-
-    # The output of GRU will be a 3D tensor of shape (batch_size, timesteps, 256)
-    model.add(layers.GRU(256, return_sequences=True))
-
-    # The output of SimpleRNN will be a 2D tensor of shape (batch_size, 128)
-    model.add(layers.SimpleRNN(128))
-
-    model.add(layers.Dense(10))
-
-    model.summary()
-
 
 if __name__== "__main__":
     X_train = load_train_data(sys.argv[1])
@@ -172,8 +159,8 @@ if __name__== "__main__":
 
     model = train_data(X_train, Y_train)
 
-    #keys, X_test = load_train_data(sys.argv[1], list(["Q4"]))
-    #Y_test = load_labels(keys, "./label.json", list(["Q4"]))
-    #test_data(X_test, Y_test, model)
-    #output_scores()
+    X_test = load_train_data(sys.argv[1], list(["Q3", "Q4"]))
+    Y_test = load_labels("./label.json", list(["Q3", "Q4"]))
+    test_data(X_test, Y_test, model)
+
 
