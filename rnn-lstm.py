@@ -69,14 +69,14 @@ def load_train_data(fin_dir, period=None):
                 combined = np.array(list(year_data[i][ccc].values()))
                 if find_str in senti_data:
                     combined = np.concatenate((combined, np.array(senti_data[find_str])))
-                
-                timestep.append(combined)
+            timestep.append(combined)
         
         #print('[{0}] company data = {1}'.format(period[i], timestep))
         #np.info(np.array(timestep))
         final_data.append(np.array(timestep))
-
+    
     padded = pad_sequences(final_data, padding='post')
+    
     #np.info(padded)
     #print(padded)
     return np.asarray(padded)
@@ -123,11 +123,11 @@ def train_data(x_train, y_train):
     
     # Add a LSTM layer with 128 internal units.
     model.add(LSTM(128, return_sequences=True, activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.1))
     
     model.add(Flatten())
-    #model.add(Dense(1, activation=wrapped_relu(max_value=3.0, threshold=2.0)))
-    model.add(Dense(2, activation='linear'))
+    model.add(Dense(2, activation=wrapped_relu(max_value=3.0, threshold=2.0)))
+    #model.add(Dense(2, activation='linear'))
     model.compile(loss='mse',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
@@ -162,5 +162,6 @@ if __name__== "__main__":
     X_test = load_train_data(sys.argv[1], list(["Q3", "Q4"]))
     Y_test = load_labels("./label.json", list(["Q3", "Q4"]))
     test_data(X_test, Y_test, model)
+
 
 
