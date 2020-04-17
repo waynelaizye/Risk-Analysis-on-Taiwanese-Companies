@@ -8,6 +8,7 @@ import os
 
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
+from keras.models import load_model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Embedding
 from keras.layers import LSTM
@@ -134,6 +135,9 @@ def train_data(x_train, y_train):
 
     model.fit(x_train, y_train, epochs=10)
 
+    # save LSTM modele
+    model.save('lstm_model.h5')
+
 
     return model
 
@@ -150,6 +154,14 @@ def test_data(x_test, y_test, model):
     return score
     
 
+def predict_data(X):
+    # load model from single file
+    model = load_model('lstm_model.h5')
+    
+    yhat = model.predict(X, verbose=0)
+    print(yhat)
+
+
 if __name__== "__main__":
     X_train = load_train_data(sys.argv[1])
     #np.info(X_train)
@@ -163,5 +175,6 @@ if __name__== "__main__":
     Y_test = load_labels("./label.json", list(["Q3", "Q4"]))
     test_data(X_test, Y_test, model)
 
-
+    #X_input = load_train_data(sys.argv[1], list(["Q3", "Q4"]))
+    #predict_data(X_input)
 
