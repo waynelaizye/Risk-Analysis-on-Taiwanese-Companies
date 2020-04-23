@@ -127,7 +127,7 @@ def train_data(x_train, y_train):
     model.add(Dropout(0.1))
     
     model.add(Flatten())
-    model.add(Dense(2, activation=wrapped_relu(max_value=3.0, threshold=2.0)))
+    model.add(Dense(2, activation=wrapped_relu(max_value=4.0, threshold=3.0)))
     #model.add(Dense(2, activation='linear'))
     model.compile(loss='mse',
                   optimizer='rmsprop',
