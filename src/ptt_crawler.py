@@ -14,14 +14,14 @@ import os
 import csv
 import sys
 
-file_name = 'test.txt'
-save_path = 'president_ptt'
-is_list = False
+input_file = 'test.txt'
+save_dir = 'president_ptt'
+is_list = True
 
 mon = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06',\
        'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
 
-def read_list():
+def read_list(file_name=input_file):
     print('Reading', file_name)
     word_list = []
     with open(file_name, encoding = 'utf8') as f:
@@ -31,7 +31,7 @@ def read_list():
     print('Total', len(word_list), 'lines')
     return word_list
 
-def read_json():
+def read_json(file_name=input_file):
     print('Reading', file_name)
     with open(file_name, encoding = 'utf8') as f:
         data = json.load(f)
@@ -71,7 +71,8 @@ def crawl(word):
                     date = date[4] + '/' + mon[date[1]] + '/0' + date[2]
                 else:
                     date = date[4] + '/' + mon[date[1]] + '/' + date[2]
-                if date < '2019/01/01':
+                #if date < '2019/01/01':
+                if date < '2020/01/01':
                     break
                 dic['date'] = date
                 dic['content'] = ' '.join(soup2.find(id="main-content").text.split('--\n※')[0].split('\n')[1:])
@@ -90,7 +91,7 @@ def crawl(word):
         page += 1
     return articles
 
-def save_data(articles, word, save_path):
+def save_data(articles, word, save_path=save_dir):
     word = word.replace(" ", "_")
     word = word.replace("/", "")
     print('file name = {0}'.format(word))
@@ -105,21 +106,21 @@ def save_data(articles, word, save_path):
 if __name__== "__main__":
 #    word_list = read_list()
     print("This is ptt crawler")
-    print('file = {0}, path = {1}'.format(file_name, save_path))
+    print('file = {0}, json_file = {1}, save_path = {2}'.format(sys.argv[0], sys.argv[1], sys.argv[2]))
     if is_list:
-        word_list = read_list()
+        word_list = read_list(sys.argv[1])
         for words in word_list:
             articles = []
             name = words[0]
             for word in words:
                 articles += crawl(word)
-            save_data(articles, name, save_path)
+            save_data(articles, name, sys.argv[2])
     else:
-        word_dic = read_json()
+        word_dic = read_json(sys.argv[1])
         for name in word_dic:
             articles = []
             for word in word_dic[name]:
                 articles += crawl(word)
-            save_data(articles, name, save_path)
+            save_data(articles, name, sys.argv[2])
 
 
