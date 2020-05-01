@@ -1,12 +1,29 @@
+#
+# This file is used to train the LSTM model
+#  
+# Before running it, copy "company.txt", 
+# "sentiment.json" and "label.json" to the current folder. 
+#
+# Usage:
+# python ./rnn_lstm.py {PATH_TO_FIN_DATA} 
+#
+# Example:
+# python ./rnn_lstm.py ../data/raw/fin_data
+#
+
+
 import collections
 import matplotlib.pyplot as plt
 import numpy as np
+import keras.backend as K
 import keras
 import json
 import sys
 import os
 
 from keras.preprocessing.sequence import pad_sequences
+from keras.utils.generic_utils import CustomObjectScope
+from keras.utils.generic_utils import get_custom_objects
 from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense, Dropout, Flatten
@@ -16,27 +33,30 @@ from keras.layers import LSTM
 
 COMPANIES="./company.txt"
 SENTI_PATH="./sentiment.json"
-# Not include Q4 temporarily since the company data is insufficient
 duration = ["Q1", "Q2"]
 
 class activation_wrapper(object):
     def __init__(self, func):
         self.func = func
+        self.__name__ = 'ReLU'
 
     def __call__(self, *args, **kwargs):
-        def _func(x):
+        def _xdfunc(x):
             return self.func(x, *args, **kwargs)
-        return _func
+        return _xdfunc
 
 wrapped_relu = activation_wrapper(keras.activations.relu)
 
+def relu_advanced(x):
+    return K.relu(x, max_value=4.0, threshold=3.0)
+
 # Combine the FIN ratios and sentiment data together
 # Read the whole year in one time
-def load_train_data(fin_dir, period=None):
+def load_train_data(fin_dir, title="ratios2019", period=None):
     files_path = [os.path.join(fin_dir, x) for x in os.listdir(fin_dir)]
     #print(files_path)
 
-    title = "ratios2019"
+    #title = "ratios2019"
     if period == None:
         period = duration
     
@@ -127,7 +147,7 @@ def train_data(x_train, y_train):
     model.add(Dropout(0.1))
     
     model.add(Flatten())
-    model.add(Dense(2, activation=wrapped_relu(max_value=4.0, threshold=3.0)))
+    model.add(Dense(2, activation=relu_advanced))
     #model.add(Dense(2, activation='linear'))
     model.compile(loss='mse',
                   optimizer='rmsprop',
@@ -155,10 +175,13 @@ def test_data(x_test, y_test, model):
     
 
 def predict_data(X):
+    get_custom_objects().update({'relu_advanced': relu_advanced})
+    #print(ret)
+
     # load model from single file
-    model = load_model('lstm_model.h5')
+    model = load_model('lstm_model.h5',  custom_objects={"activate": relu_advanced})
     
-    yhat = model.predict(X, verbose=0)
+    yhat = model.predict(X, verbose=3)
     print(yhat)
 
 
@@ -171,10 +194,8 @@ if __name__== "__main__":
 
     model = train_data(X_train, Y_train)
 
-    X_test = load_train_data(sys.argv[1], list(["Q3", "Q4"]))
+    X_test = load_train_data(sys.argv[1], period=list(["Q3", "Q4"]))
     Y_test = load_labels("./label.json", list(["Q3", "Q4"]))
     test_data(X_test, Y_test, model)
 
-    #X_input = load_train_data(sys.argv[1], list(["Q3", "Q4"]))
-    #predict_data(X_input)
 
