@@ -20,8 +20,8 @@ import time
 # In some website, the article is not in <p>, so will be empty. Check articles 
 # dictionary to delete empty news
 skip_list = ['電腦及周邊設備', '上游', '下游']
-file_name = 'test.txt'
-save_path = 'president_news'
+input_file = 'test.txt'
+save_dir = 'president_news'
 is_list = False
 
 
@@ -29,10 +29,11 @@ search_period = {
         "Q1": "min%3A1%2F1%2F2019%2Ccd_max%3A3%2F31%2F2019&tbm=nws",
         "Q2": "min%3A4%2F1%2F2019%2Ccd_max%3A6%2F30%2F2019&tbm=nws",
         "Q3": "min%3A7%2F1%2F2019%2Ccd_max%3A9%2F30%2F2019&tbm=nws",
-        "Q4": "min%3A10%2F1%2F2018%2Ccd_max%3A9%2F31%2F2018&tbm=nws"
+        "Q4": "min%3A10%2F1%2F2019%2Ccd_max%3A9%2F31%2F2019&tbm=nws",
+        "Q5": "min%3A1%2F1%2F2020%2Ccd_max%3A3%2F31%2F2020&tbm=nws"
 }
 
-def read_list():
+def read_list(file_name=input_file):
     print('Reading', file_name)
     word_list = []
     with open(file_name, encoding = 'utf8') as f:
@@ -42,7 +43,7 @@ def read_list():
     print('Total', len(word_list), 'lines')
     return word_list
 
-def read_json():
+def read_json(file_name=input_file):
     print('Reading', file_name)
     with open(file_name, encoding = 'utf8') as f:
         data = json.load(f)
@@ -126,7 +127,7 @@ def search(key_word="null", period=""):
 
     return articles
 
-def save_data(articles, word, save_path):
+def save_data(articles, word, save_path=save_dir):
     word = word.replace(" ", "_")
     word = word.replace("/", "")
     print('file name = {0}'.format(word))
@@ -141,21 +142,30 @@ def save_data(articles, word, save_path):
 if __name__== "__main__":
 #    word_list = read_list()
     print("This is news crawler")
-    print('file = {0}, path = {1}'.format(file_name, save_path))
+    print('file = {0}, json_file = {1}, save_path = {2}'.format(sys.argv[0], sys.argv[1], sys.argv[2]))
+    
     if is_list:
-        word_list = read_list()
+        word_list = read_list(sys.argv[1])
         for words in word_list:
             articles = []
             name = words[0]
             for word in words:
                 articles += search(word)
-            save_data(articles, name, save_path)
+            save_data(articles, name, sys.argv[2])
     else:
-        word_dic = read_json()
+        word_dic = read_json(sys.argv[1])
         for name in word_dic:
+            p = "Q5"
+            articles = {}
+            for word in word_dic[name]:
+                articles.update(search(word, p))
+            save_data(articles, name+'_'+p, sys.argv[2])
+                
+            """
             for p in search_period:
                 articles = {}
                 for word in word_dic[name]:
                     articles.update(search(word, p))
-                save_data(articles, name+'_'+p, save_path)
+                save_data(articles, name+'_'+p, sys.argv[2])
                 time.sleep(1)
+            """
