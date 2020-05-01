@@ -15,8 +15,8 @@ import csv
 import sys
 
 file_name = 'test.txt'
-save_path = 'president_ptt'
-is_list = False
+save_path = 'test'
+is_list = True
 
 mon = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06',\
        'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}

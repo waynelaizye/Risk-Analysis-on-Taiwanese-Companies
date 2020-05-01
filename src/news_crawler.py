@@ -29,7 +29,8 @@ search_period = {
         "Q1": "min%3A1%2F1%2F2019%2Ccd_max%3A3%2F31%2F2019&tbm=nws",
         "Q2": "min%3A4%2F1%2F2019%2Ccd_max%3A6%2F30%2F2019&tbm=nws",
         "Q3": "min%3A7%2F1%2F2019%2Ccd_max%3A9%2F30%2F2019&tbm=nws",
-        "Q4": "min%3A10%2F1%2F2018%2Ccd_max%3A9%2F31%2F2018&tbm=nws"
+        "Q4": "min%3A10%2F1%2F2019%2Ccd_max%3A9%2F31%2F2019&tbm=nws",
+        "Q5": "min%3A1%2F1%2F2020%2Ccd_max%3A3%2F31%2F2020&tbm=nws"
 }
 
 def search(key_word="null", period=""):
@@ -128,7 +129,7 @@ def search(key_word="null", period=""):
         for l in lines:
             cont += l.text
         articles[h] = cont
-        print(cont)
+        #print(cont)
 
 
     return articles
@@ -146,7 +147,7 @@ def parse_csv(file_name = "None", dest_path = "./", period=""):
                 if msg0 != None:
                     save_data(msg0, row[0], dest_path, period)
                 
-                if sys.argv[1] != "Relationship.csv" and sys.argv[1] != "test.txt":
+                if sys.argv[1] != "Relationship.csv" and sys.argv[1] != "test.txt" and "company.txt" not in sys.argv[1] :
                     msg1 = search(row[1], period)
                     if msg1 != None:
                         save_data(msg1, row[1], dest_path, period)

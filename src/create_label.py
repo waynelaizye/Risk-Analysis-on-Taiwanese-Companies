@@ -67,19 +67,19 @@ for c in company_list:
 label = {}      
 for c in company_list:
     try:
-        label[c+'_Q1'] = ratio[0][c]['z7'] + -2*(float(stock[1][c])-float(stock[0][c]))/float(stock[0][c]) + 3
+        label[c+'_Q1'] = ratio[1][c]['z7'] + -2*(float(stock[1][c])-float(stock[0][c]))/float(stock[0][c]) + 3
     except:
         label[c+'_Q1'] = 'NA'
     try:
-        label[c+'_Q2'] = ratio[1][c]['z7'] + -2*(float(stock[2][c])-float(stock[1][c]))/float(stock[1][c]) + 3
+        label[c+'_Q2'] = ratio[2][c]['z7'] + -2*(float(stock[2][c])-float(stock[1][c]))/float(stock[1][c]) + 3
     except:
         label[c+'_Q2'] = 'NA'
     try:
-        label[c+'_Q3'] = ratio[2][c]['z7'] + -2*(float(stock[3][c])-float(stock[2][c]))/float(stock[2][c]) + 3
+        label[c+'_Q3'] = ratio[3][c]['z7'] + -2*(float(stock[3][c])-float(stock[2][c]))/float(stock[2][c]) + 3
     except:
         label[c+'_Q3'] = 'NA'
     try:
-        label[c+'_Q4'] = ratio[3][c]['z7'] + -2*(float(stock[4][c])-float(stock[3][c]))/float(stock[3][c]) + 3
+        label[c+'_Q4'] = ratio[4][c]['z7'] + -2*(float(stock[4][c])-float(stock[3][c]))/float(stock[3][c]) + 3
     except:
         label[c+'_Q4'] = 'NA'
 
