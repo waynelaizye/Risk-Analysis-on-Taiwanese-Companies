@@ -333,7 +333,10 @@ for s in Q1+Q2+Q3+Q4+Q5:
             
 # Since all companies belong to same industry in our case
 for comp in sentiments:
-    sentiments[comp][5] = sent_list[n[:-5]+comp[-3:]]
+    try: # could be empty for sent_list
+        sentiments[comp][5] = sent_list[n[4:-5]+comp[-3:]]
+    except:
+        pass
 
 print('Done industry ptt')
 
@@ -489,24 +492,37 @@ for n in files:
             i = 4
         else:
             i = 5
-        sents_list[n[4:-5]] += i
+        try:
+            sents_list[n[4:-5]].append(i)
+        except:
+            sents_list[n[4:-5]] = [i]
 
 # Reuse the product dict
 for comp in sentiments:
     sents = []
-    for p in comp_prod[comp[:-3]]:
-        if len(p.split('、')) > 1:
-            for pp in p.split('、'):
-                sents.append(sent_list[pp+comp[-3:]])
-        elif len(p.split('/')) > 1:
-            for pp in p.split('/'):
-                sents.append(sent_list[pp+comp[-3:]])
-        else:
-            sents.append(sent_list[p+comp[-3:]])
     try:
-        sentiments[comp][7] = np.average(sents)
+        for p in comp_prod[comp[:-3]]:
+            if len(p.split('、')) > 1:
+                for pp in p.split('、'):
+                    try: # could have no product ptt in sent_list
+                        sents.append(sent_list[pp+comp[-3:]])
+                    except:
+                        pass
+            elif len(p.split('/')) > 1:
+                for pp in p.split('/'):
+                    try: # could have no product ptt in sent_list
+                        sents.append(sent_list[pp+comp[-3:]])
+                    except:
+                        pass
+            else:
+                try: # could have no product ptt in sent_list
+                    sents.append(sent_list[p+comp[-3:]])
+                except:
+                    pass
     except:
         pass
+    if sents:
+        sentiments[comp][7] = np.average(sents)
     
 # calculate sentcount
 for comp in sentcount:
