@@ -171,4 +171,8 @@ if __name__== "__main__":
             for p in search_period:
                 for word in word_dic[name]:
                     articles[p].update(search(word, p))
+<<<<<<< HEAD
             save_data(articles, name, save_path)
+=======
+            save_data(articles, name, save_path)
+>>>>>>> ae561689fb23be028849152a1a8e063c42ec65f5

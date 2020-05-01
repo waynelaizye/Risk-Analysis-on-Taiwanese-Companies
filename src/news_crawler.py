@@ -175,9 +175,13 @@ if __name__== "__main__":
     print('file = {0}, path = {1}'.format(sys.argv[1], sys.argv[2]))
     
     #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    """
     for QQQ in search_period:
         print('period = {0}'.format(QQQ))
         data = parse_csv(sys.argv[1], sys.argv[2], QQQ)
-
-
-
+    """
+    QQQ = "Q5"
+    print('period = {0}'.format(QQQ))
+    data = parse_csv(sys.argv[1], sys.argv[2], QQQ)
+    
+    
