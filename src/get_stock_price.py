@@ -1,9 +1,10 @@
 #
 # This file is used to retrieve financial data from balance sheets.
 # Usage:
+# python ./get_stock_price.py {PATH_TO_BALANCE_SHEET}  {DEST_DIR}
 #
 # Example:
-#
+# python ./get_stock_price.py ../../fin_statements/balance_sheet_2020_Q1.csv  ../data/raw/fin_data/
 
 import requests
 from bs4 import BeautifulSoup
