@@ -386,10 +386,8 @@ for comp in sentiments:
                 sents.append(sent_list[p+comp[-3:]])
     except:
         pass
-    try:
+    if sents:
         sentiments[comp][6] = np.average(sents)
-    except:
-        pass
 
 # process sents_list
 for prod in sents_list:
@@ -422,8 +420,11 @@ for comp in sentcount:
             else:
                 for i in sents_list[p]:
                     sentcount[comp][6][i] += 1
+        for i, a in enumerate(sentcount[comp][6]):
+            sentcount[comp][6][i] = int(sentcount[comp][6][i]/len(comp_prod[comp])) + 1
     except:
         pass
+    
 
 print('Done product news')
 
@@ -539,8 +540,11 @@ for comp in sentcount:
             else:
                 for i in sents_list[p]:
                     sentcount[comp][7][i] += 1
+        for i, a in enumerate(sentcount[comp][7]):
+            sentcount[comp][7][i] = int(sentcount[comp][7][i]/len(comp_prod[comp])) + 1
     except:
         pass
+
 
 print('Done product ptt')
 
@@ -548,4 +552,5 @@ print('Done product ptt')
 with open('sentiment.json', 'w', encoding='utf-8') as f:
     json.dump(sentiments, f, ensure_ascii=False, indent=4)
 
-
+with open('sentcount.json', 'w', encoding='utf-8') as f:
+    json.dump(sentcount, f, ensure_ascii=False, indent=4)
