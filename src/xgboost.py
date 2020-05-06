@@ -20,6 +20,8 @@ import sys
 import os
 
 from sklearn.model_selection import train_test_split
+import xgboost as xgb
+from sklearn.metrics import mean_squared_error, r2_score
 
 COMPANIES="./company.txt"
 SENTI_PATH="./sentiment.json"
@@ -89,31 +91,28 @@ def data_processing(fin_dir, period=None):
     return ret
 
 
-def load_labels(label_path, period=None):
+def load_labels(period=None):
     with open(COMPANIES) as f:
         companies = [line.strip() for line in f]
-
-    with open(label_path) as f:
+    
+    #print(LABELS)
+    with open(LABELS) as f:
         labels = json.load(f)
-    
-    if period == None:
-        period = duration
-    
+   
+
     final_data = []
     # TODO: Normalize the output ??
     for ccc in companies:
-        timestep = []
         for i in range(0, len(period)):
             #print('the period is {0}'.format(period[i]))
             find_str = ccc + "_" + period[i]
             if labels[find_str] == None or labels[find_str] == "NA":
                 # If there is no label, use "3.0" temporarily.
                 # print('No label found. {0}'.format(ccc))
-                timestep.append(3.0/1.0)
+                final_data.append(3.0/1.0)
+                #final_data.append(np.nan)
             else:
-                timestep.append(labels[find_str]/1.0)
-        #print('[{0}] company data = {1}'.format(period[i], timestep))
-        final_data.append(np.array(timestep))
+                final_data.append(labels[find_str]/1.0)
        
 
     return np.array(final_data)
@@ -136,15 +135,27 @@ if __name__== "__main__":
     X = data_processing(sys.argv[1], period= P)
     #np.info(X_train)
 
-    Y = load_labels(LABELS, P)
+    Y = load_labels(P)
     #np.info(Y_train)
+    
+    # Split the data
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33, random_state=42)
+    
+    xg_reg = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.4, learning_rate = 0.8, max_depth = 15, alpha = 10, n_estimators = 15)
 
-    #model = train_data(X_train, Y_train)
+    xg_reg.fit(X_train, Y_train)
+    preds = xg_reg.predict(X_test)
+    #print(preds)
 
-    P = list(["Q1", "Q2"])
-    X_test = data_processing(sys.argv[1], period=P)
-    Y_test = load_labels(LABELS, P)
-    #test_data(X_test, Y_test, model)
+    rmse = np.sqrt(mean_squared_error(Y_test, preds))
+    print("RMSE: %f" % (rmse))
+
+    score = xg_reg.score(X_test, Y_test)
+    print(score)
+    
+    r2 = r2_score(Y_test, preds)
+    print(r2)
+
 
 
 
