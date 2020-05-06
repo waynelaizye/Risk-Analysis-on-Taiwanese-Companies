@@ -39,13 +39,8 @@ search_period = {
 # Combine the FIN ratios and sentiment data together
 # Read the whole year in one time
 def data_processing(fin_dir, period=None):
-    files_path = [os.path.join(fin_dir, x) for x in os.listdir(fin_dir)]
-    #print(files_path)
-
-    if period == None:
-        period = duration
-    
     # Load JSON files
+    #print('period= {0}'.format(period))
     year_data = []
     for QQ in period:
         q_data = []
@@ -54,7 +49,6 @@ def data_processing(fin_dir, period=None):
         with open(abs_path) as f:
             q_data = json.load(f)
             year_data.append(q_data)
-     
 
     with open(SENTI_PATH) as f:
         senti_data = json.load(f)
@@ -80,10 +74,11 @@ def data_processing(fin_dir, period=None):
                 
                 if find_str in relation:
                     combined = np.concatenate((combined, np.array(relation[find_str])))
-        
-            # Save to the list
-            final_data.append(combined)
-    
+
+                # Save to the list
+                final_data.append(combined)
+       
+
     ret = np.asarray(final_data)
     print(ret.shape)
     #padded = pad_sequences(final_data, padding='post')
@@ -91,7 +86,16 @@ def data_processing(fin_dir, period=None):
     return ret
 
 
-def load_labels(period=None):
+def load_labels(fin_dir, period=None):
+    year_data = []
+    for QQ in period:
+        q_data = []
+        fff = search_period[QQ] + ".json"
+        abs_path = fin_dir + "/" + fff
+        with open(abs_path) as f:
+            q_data = json.load(f)
+            year_data.append(q_data)
+
     with open(COMPANIES) as f:
         companies = [line.strip() for line in f]
     
@@ -99,9 +103,27 @@ def load_labels(period=None):
     with open(LABELS) as f:
         labels = json.load(f)
    
+    sum = 0
+    cnt = 0
+    for val in labels.values():
+        if val != "NA":
+            sum = sum + val
+            cnt = cnt + 1
+    avg = sum * 1.0/cnt
+    print('average value of the label is: {0}'.format(avg))
 
     final_data = []
-    # TODO: Normalize the output ??
+    for i in range(0, len(period)):
+        for key, val in year_data[i].items():
+            find_str = key + "_" + period[i]
+            if labels[find_str] == None or labels[find_str] == "NA":
+                # If there is no label found, use AVG directly.
+                #print('No label found. {0}'.format(key))
+                final_data.append(avg * 0.6)
+            else:
+                final_data.append(labels[find_str])
+            
+    """
     for ccc in companies:
         for i in range(0, len(period)):
             #print('the period is {0}'.format(period[i]))
@@ -109,39 +131,21 @@ def load_labels(period=None):
             if labels[find_str] == None or labels[find_str] == "NA":
                 # If there is no label, use "3.0" temporarily.
                 # print('No label found. {0}'.format(ccc))
-                final_data.append(3.0/1.0)
+                final_data.append(avg)
                 #final_data.append(np.nan)
             else:
                 final_data.append(labels[find_str]/1.0)
-       
+    """
 
     return np.array(final_data)
 
 
-def train_data(x_train, y_train):
-    pass
-
-
-def test_data(x_test, y_test, model):
-    pass
-
-
-def predict_data(X):
-    pass
-
-
-if __name__== "__main__":
-    P = list(["Q1", "Q2"])
-    X = data_processing(sys.argv[1], period= P)
-    #np.info(X_train)
-
-    Y = load_labels(P)
-    #np.info(Y_train)
-    
-    # Split the data
+def train_data(X, Y):
+     # Split the data
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33, random_state=42)
     
-    xg_reg = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.4, learning_rate = 0.8, max_depth = 15, alpha = 10, n_estimators = 15)
+    # XGBoost
+    xg_reg = xgb.XGBRegressor(objective ='reg:linear', colsample_bytree = 0.4, learning_rate = 0.6, max_depth = 10, alpha = 10, n_estimators = 15)
 
     xg_reg.fit(X_train, Y_train)
     preds = xg_reg.predict(X_test)
@@ -155,6 +159,26 @@ if __name__== "__main__":
     
     r2 = r2_score(Y_test, preds)
     print(r2)
+
+    return xg_reg
+
+if __name__== "__main__":
+    P = list(["Q1", "Q2", "Q3", "Q4"])
+    X = data_processing(sys.argv[1], period= P)
+    #np.info(X_train)
+
+    Y = load_labels(sys.argv[1], period=P)
+    #np.info(Y_train)
+    
+    xg_reg = train_data(X, Y)
+
+    P = list(["Q5"])
+    X = data_processing(sys.argv[1], period= P)
+
+
+    preds = xg_reg.predict(X)
+    print("default prediction is:")
+    print(preds)
 
 
 
