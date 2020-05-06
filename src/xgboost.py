@@ -62,28 +62,29 @@ def data_processing(fin_dir, period=None):
     
     final_data = []
     all_keys = []
-    for ccc in companies:
-        for i in range(0, len(period)):
-            #print('the period is {0}'.format(period[i]))
-            if ccc in year_data[i]:
-                find_str = ccc + "_" + period[i]
-                combined = np.array(list(year_data[i][ccc].values()))
-                
-                if find_str in senti_data:
-                    combined = np.concatenate((combined, np.array(senti_data[find_str])))
-                
-                if find_str in relation:
-                    combined = np.concatenate((combined, np.array(relation[find_str])))
+    valid_list = []
+    for i in range(0, len(period)):
+        #print('the period is {0}'.format(period[i]))
+        for key, val in year_data[i].items():
+            find_str = key + "_" + period[i]
+            combined = np.array(list(val.values()))
+            
+            if find_str in senti_data:
+                combined = np.concatenate((combined, np.array(senti_data[find_str])))
+            
+            if find_str in relation:
+                combined = np.concatenate((combined, np.array(relation[find_str])))
 
-                # Save to the list
-                final_data.append(combined)
+            # Save to the list
+            final_data.append(combined)
+            valid_list.append(find_str)
        
 
     ret = np.asarray(final_data)
     print(ret.shape)
     #padded = pad_sequences(final_data, padding='post')
 
-    return ret
+    return ret, valid_list
 
 
 def load_labels(fin_dir, period=None):
@@ -113,6 +114,7 @@ def load_labels(fin_dir, period=None):
     print('average value of the label is: {0}'.format(avg))
 
     final_data = []
+    #valid_list = []
     for i in range(0, len(period)):
         for key, val in year_data[i].items():
             find_str = key + "_" + period[i]
@@ -122,7 +124,8 @@ def load_labels(fin_dir, period=None):
                 final_data.append(avg * 0.6)
             else:
                 final_data.append(labels[find_str])
-            
+            #valid_list.append(find_str)
+
     """
     for ccc in companies:
         for i in range(0, len(period)):
@@ -162,9 +165,23 @@ def train_data(X, Y):
 
     return xg_reg
 
+
+def save_result(preds, keys):
+    print(keys)
+    data = {}
+    for i in range(0, len(keys)):
+        data[keys[i]] = str(preds[i])
+
+
+    # save to json....
+    with open("prediction.json", 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+
 if __name__== "__main__":
-    P = list(["Q1", "Q2", "Q3", "Q4"])
-    X = data_processing(sys.argv[1], period= P)
+    P = list(["Q1", "Q2", "Q3"])
+    X, keys = data_processing(sys.argv[1], period= P)
     #np.info(X_train)
 
     Y = load_labels(sys.argv[1], period=P)
@@ -172,15 +189,15 @@ if __name__== "__main__":
     
     xg_reg = train_data(X, Y)
 
-    P = list(["Q5"])
-    X = data_processing(sys.argv[1], period= P)
+    P = list(["Q4"])
+    X, keys = data_processing(sys.argv[1], period= P)
 
 
     preds = xg_reg.predict(X)
     print("default prediction is:")
     print(preds)
 
-
-
+    save_result(preds, keys)
+   
 
 
