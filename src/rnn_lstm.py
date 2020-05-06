@@ -180,9 +180,13 @@ def predict_data(X):
 
     # load model from single file
     model = load_model('lstm_model.h5',  custom_objects={"activate": relu_advanced})
-    
-    yhat = model.predict(X, verbose=3)
+   
+    model.summary()
+    yhat = model.predict(X)
+    #yhat = model.predict_proba(X)
     print(yhat)
+
+    return yhat
 
 
 if __name__== "__main__":
