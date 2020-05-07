@@ -833,6 +833,9 @@ $.extend(
 
 <div class="container">
 <h2>Company Selected: {{name}}</h2>
+<p>The risk score is:</p>
+<h2 id="score" style="font-weight: bold;">N/A</h2>
+</div>
 <div id="chart" class="container">
 <h3> Sentiment Analysis</h3>
 <p> The below bar char shows the sentiment analysis on the company.</p></div>
@@ -840,14 +843,30 @@ $.extend(
 <h3> Relation Graph</h3>
 <p> The below graph shows the product of the company and its competitors.</p>
 <svg width="960" height="500"></svg>
+</div>
+<div id="chart4" class="container">
+<h3> Financial Data</h3>
+<p> We used the stock price movement as label for our training. Below shows the past stock price of the company.</p>
+</div>
 <div id="chart3" class="container">
 <h3> Stock Price</h3>
 <p> We used the stock price movement as label for our training. Below shows the past stock price of the company.</p>
 </div>
-<div id="chart4" class="container">
-<h3> Stock Price</h3>
-<p> We used the stock price movement as label for our training. Below shows the past stock price of the company.</p>
-</div>
+
+
+<script>
+document.getElementById("score").innerHTML = '{{score}}';
+if ('{{score}}' < 4) {
+  document.getElementById("score").style.color = "green";
+}
+else if  ('{{score}}' < 6) {
+  document.getElementById("score").style.color = 'orange';
+}
+
+else {
+   document.getElementById("score").style.color = "red";
+}
+</script>
 
 <script type="text/javascript">
     var colors = d3.scaleOrdinal(d3.schemeCategory20);
@@ -1150,8 +1169,8 @@ stock = JSON.parse('{{ stock | tojson | safe}}');
 		svg3.append("text")
 		.attr("x", width/2)
 		.attr("y", height/2)
-		.text("No Data")
-		.style('font-size','30px')
+		.text("No Data.")
+		.style('font-size','14px')
 	}
 
 </script>
@@ -1166,6 +1185,7 @@ var svg4 = d3.select("#chart4").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+if (data.length > 0) {
 var x4 = d3.scaleBand()
     .domain(d3.range(data.length))
     .range([margin.left, width - margin.right])
@@ -1206,7 +1226,14 @@ svg4.append("g")
       .attr("y", d => y4(d.rank))
       .attr("height", d => y4(0) - y4(d.rank))
       .attr("width", x4.bandwidth());
-
+}
+else {
+svg4.append("text")
+		.attr("x", width/2)
+		.attr("y", height/2)
+		.text("No Data.")
+		.style('font-size','14px')
+}
 </script>
 </body>
 </html>

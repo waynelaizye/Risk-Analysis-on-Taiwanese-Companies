@@ -30,21 +30,31 @@ def hello_world():
 def upload_file():
     if request.method == 'POST':
         comp_name = request.form['name']
+        
+        score = 5
+        
         with open('js_fin.json', 'r', encoding='utf-8') as f:
             findata = json.load(f)
-        fin = findata[comp_name]
+        if comp_name in findata:
+            fin = findata[comp_name]
+        else:
+            fin = []
+            
         graph = get_egonet(comp_name)
+        
         with open('js_sent.json', 'r', encoding='utf-8') as f:
             sentdata = json.load(f)
         sent = sentdata[comp_name]
+        
         with open('js_stock.json', 'r', encoding='utf-8') as f:
             stockdata = json.load(f)
         if comp_name in stockdata:
             stock = stockdata[comp_name]
         else:
             stock = []
+            
         return render_template("index2.html", name = comp_name, graph = graph, \
-                               sent = sent, stock = stock, fin = fin)
+                               sent = sent, stock = stock, fin = fin, score = score)
     return render_template("index.html")
 
 
