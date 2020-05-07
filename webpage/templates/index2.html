@@ -833,25 +833,48 @@ $.extend(
 
 <div class="container">
 <h2>Company Selected: {{name}}</h2>
-<p>The risk score is:</p>
-<h2 id="score" style="font-weight: bold;">N/A</h2>
+<p><br>Risk score:</p>
+<p id="score" style="font-weight: bold; font-size:30px;" >N/A</p>
+<h3>About the risk score</h3>
+<p>The risk score is calculated by:</p>
+<ul>
+  <li>The sentiment analysis score of the news related to the company</li>
+  <li>Ratio on Financial reports</li>
+  <li>Relationship between products and other companies</li>
+  <li>Stock price movement</li>
+</ul>
+<p>The score is mapped between 0 and 10. The higher the score is, the riskier the company is.</p>
 </div>
 <div id="chart" class="container">
 <h3> Sentiment Analysis</h3>
-<p> The below bar char shows the sentiment analysis on the company.</p></div>
+<p> The below bar char shows the sentiment analysis of the company on social media. We crawled data in four categories, which are:</p>
+<ul>
+  <li>Posts related to the company ifself</li>
+  <li>Posts related to the company's president and chairman</li>
+  <li>Posts related to the industry that the company belongs to</li>
+  <li>Posts related to the company's product</li>
+</ul>
+<p>Within each category, we crawl the posts from two source: Google News and PTT, where PTT is the largest discussion board in Taiwan.</p>
+</div>
 <div id="chart2" class="container">
 <h3> Relation Graph</h3>
-<p> The below graph shows the product of the company and its competitors.</p>
+<p> The below graph shows the product of the company and its competitors. We believe that companies affect each other if they have certain relationship.
+For example, if the company's competitor has financial problem, the company can benefit from dominating the market.</p> 
+<p>Therefore, the way we utilize this graph is that for each company, we find out its competitors, upstream companies and downstream companies.
+We then aggregate the financial score of the companies and add this feature into our model.</p>
 <svg width="960" height="500"></svg>
 </div>
-<div id="chart4" class="container">
-<h3> Financial Data</h3>
-<p> We used the stock price movement as label for our training. Below shows the past stock price of the company.</p>
-</div>
 <div id="chart3" class="container">
-<h3> Stock Price</h3>
-<p> We used the stock price movement as label for our training. Below shows the past stock price of the company.</p>
+<h3>Stock Price</h3>
+<p> Since we are not able to get the risk score label, we utilized the stock price movement as label for our training. 
+The movement serves an indicator of how the company was performing.</p>
+<p>Below shows stock price of the company over the past year.</p>
 </div>
+<div id="chart4" class="container">
+<h3>Financial Data</h3>
+<p>There are 9 parts in the financial data that we use. They stand for:</p>
+</div>
+
 
 
 <script>
