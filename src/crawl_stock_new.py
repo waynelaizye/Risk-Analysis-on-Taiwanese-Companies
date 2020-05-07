@@ -10,9 +10,11 @@ import json
 import time
 
 d1 = '2018/10/01'
-d2 = '2019/12/31'
+d2 = '2020/05/01'
 
 def get_dates_id(data):
+    i1 = 0
+    i2 = len(data[0])-1
     for i in range(len(data[0])):
         if data[0][i] >= d1:
             i1 = i
@@ -25,7 +27,7 @@ def get_dates_id(data):
     return i1, i2
 
 
-with open('test.txt', 'r', encoding='utf-8') as f:
+with open('company_data.json', 'r', encoding='utf-8') as f:
     compdata = json.load(f)
 
 for d in compdata:

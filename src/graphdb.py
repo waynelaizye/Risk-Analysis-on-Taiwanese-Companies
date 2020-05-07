@@ -5,13 +5,13 @@ Created on Fri Apr 17 18:09:12 2020
 @author: Wayne
 """
 
-import client_gdb as client
+from . import client_gdb as client
 import ast
 import json
 
 #Establish connection to the rest server
 
-GRAPHDB_HOST = "http://34.69.133.92" # host ip
+GRAPHDB_HOST = "http://146.148.63.155" # host ip
 GRAPHDB_PORT = "8012" # port
 grest_host = GRAPHDB_HOST + ":" + GRAPHDB_PORT
 g = client.gc(host=grest_host) # initialize the graphdb obj
@@ -101,6 +101,28 @@ def get_downstream(comp_name):
     for p in downstreamproduct:
         comp_list.update(get_companies_down(p))
     return list(comp_list)
+
+def get_egonet(comp_name):
+    res = g.get_egonet(vertex_id=comp_name, vertex_label="公司", depth = 2)
+    data = ast.literal_eval(res.decode("UTF-8"))['data']
+    data['nodes'] = data.pop('vertices')
+    data['links'] = data.pop('edges')
+    for i,n in enumerate(data['nodes']):
+        data['nodes'][i].pop('properties')
+        if "\\" in data['nodes'][i]['id']:
+            data['nodes'][i]['id'] = data['nodes'][i]['id'].replace('\\',',')
+        data['nodes'][i]['name'] = data['nodes'][i]['id']
+    for i,l in enumerate(data['links']):
+        if "\\" in data['links'][i]['source_id']:
+            data['links'][i]['source_id'] = data['links'][i]['source_id'].replace('\\',',')
+        if "\\" in data['links'][i]['target_id']:
+            data['links'][i]['target_id'] = data['links'][i]['target_id'].replace('\\',',')
+#        if l['label'] != '生產':
+#            data['links'].pop(i)
+#            continue
+        data['links'][i] = {'source':l['source_id'], 'target':l['target_id'], 'type':l['label']}
+    
+    return data
 
 #json_str = {
 #    "vertices": [{"id": "華碩", "label": "公司"}],
