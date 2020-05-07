@@ -31,9 +31,9 @@ RELATIONS = "./relation.json"
 search_period = {
     "Q1": "ratios2018Q4",
     "Q2": "ratios2019Q1",
-    "Q3": "ratios2019Q3",
-    "Q4": "ratios2019Q4",
-    "Q5": "ratios2020Q1",
+    "Q3": "ratios2019Q2",
+    "Q4": "ratios2019Q3",
+    "Q5": "ratios2020Q4",
 }
 
 # Combine the FIN ratios and sentiment data together
@@ -60,43 +60,51 @@ def data_processing(fin_dir, period=None):
         companies = [line.strip() for line in f]
     #print(companies) 
     
-    final_data = []
-    all_keys = []
-    valid_list = []
-    for i in range(0, len(period)):
-        #print('the period is {0}'.format(period[i]))
-        for key, val in year_data[i].items():
-            find_str = key + "_" + period[i]
-            combined = np.array(list(val.values()))
-            
-            if find_str in senti_data:
-                combined = np.concatenate((combined, np.array(senti_data[find_str])))
-            
-            if find_str in relation:
-                combined = np.concatenate((combined, np.array(relation[find_str])))
+    # Count the AVG value for all columns
+    #for i in range(0, len(period)): 
+    #    for key, val in year_data[i].items():
+    col_num = 20
+    tmp_array = np.empty(col_num)
+    tmp_array[:] = np.NaN
+    print("tmp array is: {0}, len={1}".format(tmp_array, len(tmp_array)))
 
+    final_data = []
+    #valid_list = []
+    for ccc in companies:
+        for i in range(0, len(period)): 
+            #print('the period is {0}'.format(period[i]))
+            find_str = ccc + "_" + period[i]
+            if ccc in year_data[i]:
+                combined = np.array(list(year_data[i][ccc].values()))
+                
+                #print("find_str {0}, {1}".format(find_str, combined))
+                if find_str in senti_data:
+                    combined = np.concatenate((combined, np.array(senti_data[find_str])))
+                
+                if find_str in relation:
+                    combined = np.concatenate((combined, np.array(relation[find_str])))
+            else:
+                combined = np.array(tmp_array) 
             # Save to the list
             final_data.append(combined)
-            valid_list.append(find_str)
-       
+            #valid_list.append(find_str)
+    
+    avg_array = np.nanmean(final_data, axis=0)
+    print("AVG array is: {0}".format(avg_array))
+
+    for item in final_data:
+        if np.array_equal(item, tmp_array) == True:
+            item = avg_array
+
 
     ret = np.asarray(final_data)
     print(ret.shape)
-    #padded = pad_sequences(final_data, padding='post')
 
-    return ret, valid_list
+
+    return ret
 
 
 def load_labels(fin_dir, period=None):
-    year_data = []
-    for QQ in period:
-        q_data = []
-        fff = search_period[QQ] + ".json"
-        abs_path = fin_dir + "/" + fff
-        with open(abs_path) as f:
-            q_data = json.load(f)
-            year_data.append(q_data)
-
     with open(COMPANIES) as f:
         companies = [line.strip() for line in f]
     
@@ -114,17 +122,15 @@ def load_labels(fin_dir, period=None):
     print('average value of the label is: {0}'.format(avg))
 
     final_data = []
-    #valid_list = []
-    for i in range(0, len(period)):
-        for key, val in year_data[i].items():
-            find_str = key + "_" + period[i]
+    for ccc in companies:
+        for i in range(0, len(period)):
+            find_str = ccc + "_" + period[i]
             if labels[find_str] == None or labels[find_str] == "NA":
                 # If there is no label found, use AVG directly.
                 #print('No label found. {0}'.format(key))
                 final_data.append(avg * 0.6)
             else:
                 final_data.append(labels[find_str])
-            #valid_list.append(find_str)
 
     """
     for ccc in companies:
@@ -167,7 +173,7 @@ def train_data(X, Y):
 
 
 def save_result(preds, keys):
-    print(keys)
+    #print(keys)
     data = {}
     for i in range(0, len(keys)):
         data[keys[i]] = str(preds[i])
@@ -181,23 +187,24 @@ def save_result(preds, keys):
 
 if __name__== "__main__":
     P = list(["Q1", "Q2", "Q3"])
-    X, keys = data_processing(sys.argv[1], period= P)
-    #np.info(X_train)
+    X = data_processing(sys.argv[1], period= P)
 
     Y = load_labels(sys.argv[1], period=P)
-    #np.info(Y_train)
     
     xg_reg = train_data(X, Y)
 
     P = list(["Q4"])
-    X, keys = data_processing(sys.argv[1], period= P)
-
+    X = data_processing(sys.argv[1], period= P)
+    #print('len in {0} is: {1}'.format(P, len(keys)))
 
     preds = xg_reg.predict(X)
     print("default prediction is:")
-    print(preds)
-
-    save_result(preds, keys)
+    #print(preds)
+    
+    with open(COMPANIES) as f:
+        companies = [line.strip() for line in f]
+    
+    save_result(preds, companies)
    
 
 
