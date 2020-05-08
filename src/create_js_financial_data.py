@@ -24,14 +24,21 @@ for i in range(len(a)):
 a = np.array(a)
 
 for i in range(9):
-    a[:,i] = np.argsort(a[:,i])
+    if i == 2 or i ==3:
+        res = list(np.argsort(a[:,i]))
+        for j in range(151):
+            a[j,i] = res.index(j)
+    else:
+        res = list(np.argsort(-a[:,i]))
+        for j in range(151):
+            a[j,i] = res.index(j)
 
 for i in range(151):
     for j in range(9):
         a[i,j] = 100 - a[i,j]/1.51
 
 for i,k in enumerate(ratio):
-    ratio[k] = [{'x':keys[i], 'rank':v} for i,v in enumerate(a[i])]
+    ratio[k] = [{'x':keys[ii], 'rank':v, 'value':round(ratio[k][keys[ii]],3)} for ii,v in enumerate(a[i])]
 
 with open('js_fin.json', 'w', encoding='utf-8') as f:
     json.dump(ratio, f, ensure_ascii=False, indent=4)

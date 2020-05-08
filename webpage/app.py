@@ -31,7 +31,9 @@ def upload_file():
     if request.method == 'POST':
         comp_name = request.form['name']
         
-        score = 5
+        with open('prediction.json', 'r', encoding='utf-8') as f:
+            scoredata = json.load(f)
+        score = scoredata[comp_name][:3]
         
         with open('js_fin.json', 'r', encoding='utf-8') as f:
             findata = json.load(f)

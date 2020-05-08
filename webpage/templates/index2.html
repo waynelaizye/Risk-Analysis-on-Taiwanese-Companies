@@ -872,17 +872,30 @@ The movement serves an indicator of how the company was performing.</p>
 </div>
 <div id="chart4" class="container">
 <h3>Financial Data</h3>
-<p>There are 9 parts in the financial data that we use. They stand for:</p>
+<p>There are 9 features in the financial data that we use. They stand for:</p>
+<ul>
+  <li>logZ1: Logarithm of total asset value</li>
+  <li>logZ4: Logarithm of Book-to-market value</li>
+  <li>Z4: Book-to-market value</li>
+  <li>Z5: long-term debts / total invested capital</li>
+  <li>Z7: Total debt / total capital</li>
+  <li>Z11: Operating income / received capitals</li>
+  <li>Z13: Net income before tax/ received capitals</li>
+  <li>Z15: Gross profit margin</li>
+  <li>Z17: Earnings per share (EPS)</li>
+  <li>Z22: Quick ratio</li>
+</ul>
+<p>For z5 and z7 the lower the value, the better the ranking is. For the other features, the higher the better.</p>
+<p>The below chart shows the ranking of each ratio. The ranking is compared among all companies and the higher the better.</p>
+
 </div>
-
-
 
 <script>
 document.getElementById("score").innerHTML = '{{score}}';
-if ('{{score}}' < 4) {
+if ('{{score}}' < 3.6) {
   document.getElementById("score").style.color = "green";
 }
-else if  ('{{score}}' < 6) {
+else if  ('{{score}}' < 5) {
   document.getElementById("score").style.color = 'orange';
 }
 
@@ -1248,7 +1261,11 @@ svg4.append("g")
       .attr("x", (d, i) => x4(i))
       .attr("y", d => y4(d.rank))
       .attr("height", d => y4(0) - y4(d.rank))
-      .attr("width", x4.bandwidth());
+      .attr("width", x4.bandwidth()).on("mouseover", function(){return tooltip.style("visibility", "visible");})
+  .on("mouseout", function(){return tooltip.style("visibility", "hidden");})
+  .on("mousemove", function(d) {
+    return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px").text(d.value);
+	});
 }
 else {
 svg4.append("text")
