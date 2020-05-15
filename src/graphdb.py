@@ -11,11 +11,11 @@ import json
 
 #Establish connection to the rest server
 
-GRAPHDB_HOST = "http://146.148.63.155" # host ip
+GRAPHDB_HOST = "http://3.14.253.94" # host ip
 GRAPHDB_PORT = "8012" # port
 grest_host = GRAPHDB_HOST + ":" + GRAPHDB_PORT
 g = client.gc(host=grest_host) # initialize the graphdb obj
-print(g.set_current_graph("ComputerIndustry"))
+print(g.set_current_graph("TaiwanComputerIndustry"))
 
 
 def get_products(comp_name):
