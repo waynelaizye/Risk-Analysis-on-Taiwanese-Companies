@@ -6,7 +6,7 @@ Folders inside are:
     crawlers, models and other data processing Python files.
 
 2.  data/raw: The raw data retrieved from financial statements
-    , news and social media without any pre-processing.
+    , news and social media without a little pre-processing.
 
 3.  data/train: Files after data processing that are used to feed in the model.
 
