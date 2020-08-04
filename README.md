@@ -1,25 +1,39 @@
 # Risk-Analysis-on-Taiwanese-Companies
 
-The English Premier is the top level of the English football league system. The goal of our work is to provide a system that has the function of 
-* Team Performance Prediction
-* Match Result Prediction
-* Player Playstyle Clustering
-* Player Influence Analysis.
+In this project, we aim to provide a system that could perform risk analysis to companies based on:
+
+* Accounting Information
+* Industrial Prospective
+* Company Reputation
+* Company Relationships
+
+To be more accurate, we design our system to have the ability to
+1. Analyze the financial report and extract important informations
+2. Perform social media monitering and analysis on certain companies and industries
+3. Build graph database for companies and products and infer relationships on it
 
 ## System Overview
 The image below shows the overview of our system. 
 
 <img src="readme_images/overview.png">
-We used Google Cloud Platform (GCP) to store raw data and the preprocessed data and used Pyspark to process the csv data into RDD and do mapping and filtering for out feature extraction. For the prediction and classification models, we tried several tools: Keras, Scikit-learn, XGboost. We used Keras to build the LSTM model for performance prediction, and also the MLP model for match result classification. Scikit-learn was used to do several data preprocessing including one hot encoding, testing data splitting, and standard scaler. We also utilized the Random Forest classifier in Scikit-learn. 
 
-## Prediction Models
-The models of this work are prediction models(for team performance and match result) and analysis models(for playstyle clustering and influence analysis). We introduce our prediction models in this section.
+Our model can be split into three parts:
 
-<img src="readme_images/model.png">
-The image above shows our match prediction model. We propose a method which combines our team performance algorithm(which is shown below) and the classification models we tested to solve the problem we encountered. The model is the combination of the LSTM model and Random Forest Classifier. 
-<img src="readme_images/algo.png">
+### Financial reports
 
-## Code Usage
+| Category           | Variable | Ratios                                    |
+|--------------------|----------|-------------------------------------------|
+| Firm size          | Z1       | Total asset value                         |
+|                    | Z4       | Book-to-market value                      |
+| Financial leverage | Z5       | long-term debts / total invested capital  |
+|                    | Z7       | Total debt / total capital                |
+| Profitability      | Z11      | Operating income / received capitals      |
+|                    | Z13      | Net income before tax / received capitals |
+|                    | Z15      | Gross profit margin                       |
+|                    | Z17      | Earnings per share (EPS)                  |
+| Liquidity          | Z22      | Quick Ratio                               |
+
+## Webpage Visualization
 For model comparing
 ```
 python main.py compare [model] [method]
