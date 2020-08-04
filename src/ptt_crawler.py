@@ -71,7 +71,7 @@ def crawl(word):
                     date = date[4] + '/' + mon[date[1]] + '/0' + date[2]
                 else:
                     date = date[4] + '/' + mon[date[1]] + '/' + date[2]
-                if date < '2019/01/01':
+                if date < '2020/01/01':
                     break
                 dic['date'] = date
                 dic['content'] = ' '.join(soup2.find(id="main-content").text.split('--\n※')[0].split('\n')[1:])
